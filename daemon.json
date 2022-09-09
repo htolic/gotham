@@ -1,6 +1,0 @@
-{
-  "log-driver": "syslog",
-  "log-opts": {
-    "tag": "docker/container/{{.Name}}"
-  }
-}
