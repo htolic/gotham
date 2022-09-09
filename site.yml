@@ -36,7 +36,9 @@
         group: root
         mode: u+rw,g-rwx,o-rwx
         backup: yes
+      register: logging
     - name: Restart docker service
       ansible.builtin.service:
         name: docker
         state: restarted
+      when: logging.changed
