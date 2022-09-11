@@ -8,7 +8,7 @@
     docker push
 
 ### Prepare minikube
-    minikube start --driver=docker
+    minikube start --driver docker
 
 ### Run scanner inside minikube
     kubectl apply -f scanner.yaml
