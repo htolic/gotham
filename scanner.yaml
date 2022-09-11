@@ -1,0 +1,59 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: scanner-volume
+spec:
+  accessModes:
+    - ReadWriteOnce
+  capacity:
+    storage: 10Mi
+  hostPath:
+    path: /data/scanner/
+  claimRef:
+    name: scanner-pvc
+    namespace: network-scanner
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: network-scanner
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: scanner-pvc
+  namespace: network-scanner
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Mi
+  volumeName: scanner-volume
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: scan-job
+  namespace: network-scanner
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          hostNetwork: true
+          volumes:
+          - name: scanner-data
+            persistentVolumeClaim:
+              claimName: scanner-pvc
+          containers:
+          - name: scanner
+            image: htolic/scanner:dev
+            imagePullPolicy: IfNotPresent
+            args: ['192.168.50.1']
+            volumeMounts:
+            - mountPath: /var/tmp/htolic-scanner
+              name: scanner-data
+          restartPolicy: OnFailure

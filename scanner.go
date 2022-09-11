@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -55,6 +56,15 @@ func main() {
 		filename = strings.Replace(prefix.String(), "/", "_", -1)
 	}
 
+	path := "/var/tmp/htolic-scanner"
+	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
+		err := os.Mkdir(path, os.ModePerm)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	filename = fmt.Sprintf("%s/%s", path, filename)
 	saveFile, err := os.OpenFile(filename, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0664)
 	if err != nil {
 		log.Fatal(err)
