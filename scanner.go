@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"net/netip"
@@ -26,6 +29,7 @@ func main() {
 	var prefix netip.Prefix = netip.Prefix{}
 	var scanips []netip.Addr
 	var filename string
+	var noChange bool = true
 	var err error
 
 	cmdArg := ""
@@ -51,28 +55,53 @@ func main() {
 		filename = strings.Replace(prefix.String(), "/", "_", -1)
 	}
 
-	saveFile, err := os.Open(filename)
+	saveFile, err := os.OpenFile(filename, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0664)
 	if err != nil {
-		saveFile, err = os.Create(filename)
-		if err != nil {
-			log.Fatal(err)
-		}
+		log.Fatal(err)
 	}
 	defer saveFile.Close()
 
+	reader := bufio.NewReader(saveFile)
+	var bs []byte
+	buf := bytes.NewBuffer(bs)
+
 	for _, ip = range scanips {
-		_, err := fmt.Fprintln(saveFile, ip)
-		if err != nil {
+		_, err := reader.ReadString('\n')
+		if err != nil && err != io.EOF {
 			log.Fatal(err)
 		}
 
+		buf.WriteString(fmt.Sprintf("%s\n", ip.String()))
+		fmt.Println(ip.String())
+		noChange = true
+
 		for _, port := range ports {
+			line, err := reader.ReadString('\n')
+			if err != nil && err != io.EOF {
+				log.Fatal(err)
+			}
+
+			result := ""
 			isOpen := scan(fmt.Sprintf("%s:%d", ip, port))
 			if isOpen {
-				fmt.Fprintf(saveFile, "* %d/tcp open\n", port)
+				result = fmt.Sprintf("* %d/tcp open\n", port)
 			} else {
-				fmt.Fprintf(saveFile, "* %d/tcp close\n", port)
+				result = fmt.Sprintf("* %d/tcp close\n", port)
+			}
+			buf.WriteString(result)
+
+			if line != result {
+				fmt.Print(result)
+				noChange = false
 			}
 		}
+
+		if noChange {
+			fmt.Println("No change")
+		}
 	}
+
+	saveFile.Truncate(0)
+	saveFile.Seek(0, 0)
+	saveFile.WriteString(buf.String())
 }
