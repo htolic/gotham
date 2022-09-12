@@ -1,11 +1,13 @@
 FROM golang:1.18.1
 
+RUN groupadd gorunner && \
+    useradd -m -g gorunner gorunner
+
+USER gorunner
+
 WORKDIR /usr/src/app
 
 COPY ./getweather.go .
-RUN groupadd gorunner && \
-    useradd -g gorunner gorunner && \
-    go install getweather.go
+RUN go install getweather.go
 
-USER gorunner
 CMD ["getweather"]
