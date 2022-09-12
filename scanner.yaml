@@ -51,8 +51,8 @@ spec:
           - name: scanner
             image: htolic/scanner:dev
             imagePullPolicy: IfNotPresent
-            args: ['192.168.50.51']
+            args: ["192.168.50.51"]
             volumeMounts:
-            - mountPath: /var/tmp/htolic-scanner
+            - mountPath: /home/gorunner/scanner
               name: scanner-data
           restartPolicy: OnFailure
