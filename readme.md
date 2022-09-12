@@ -9,7 +9,7 @@
 
 ### Prepare minikube
     minikube start --driver docker
-    minikube mount temp:/data/scanner --uid 1000 --gid 1000
+    minikube mount temp:/data/scanner --uid 1001 --gid 1001
 
 ### Run scanner inside minikube
     kubectl apply -f scanner.yaml

@@ -38,11 +38,15 @@ metadata:
   name: scan-job
   namespace: network-scanner
 spec:
-  schedule: "*/5 * * * *"
+  schedule: "*/1 * * * *"
   jobTemplate:
     spec:
       template:
         spec:
+          securityContext:
+            runAsUser: 1001
+            runAsGroup: 1001
+            fsGroup: 1001
           volumes:
           - name: scanner-data
             persistentVolumeClaim:
